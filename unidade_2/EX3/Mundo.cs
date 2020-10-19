@@ -37,6 +37,12 @@ namespace gcgcg
     private Circulo obj_Circulo;
     private Circulo obj_Circulo2;
     private Circulo obj_Circulo3;
+    private SegmentoReta obj_SegReta;
+    private SegmentoReta obj_SegReta2;
+    private SegmentoReta obj_SegReta3;
+    private Ponto4D ptCirculo1;
+    private Ponto4D ptCirculo2;
+    private Ponto4D ptCirculo3;
 
 #if CG_Privado
     private Privado_SegReta obj_SegReta;
@@ -51,12 +57,42 @@ namespace gcgcg
       Console.WriteLine(" --- Ajuda / Teclas: ");
       Console.WriteLine(" [  H     ] mostra teclas usadas. ");         
       
-      obj_Circulo = new Circulo("A", null, 72, 100, new Ponto4D(0,0));
+      ptCirculo1 = new Ponto4D(0,100);
+      ptCirculo2 = new Ponto4D(100,-100);
+      ptCirculo3 = new Ponto4D(-100,-100);
+
+      obj_Circulo = new Circulo("A", null, 72, 100, ptCirculo1);
       obj_Circulo.ObjetoCor.CorR = 0; obj_Circulo.ObjetoCor.CorG = 0; obj_Circulo.ObjetoCor.CorB = 0;
       obj_Circulo.PrimitivaTamanho = 5;
       obj_Circulo.PrimitivaTipo = PrimitiveType.Points;
       objetosLista.Add(obj_Circulo);
       objetoSelecionado = obj_Circulo;
+      obj_Circulo2 = new Circulo("A", null, 72, 100, ptCirculo2);
+      obj_Circulo2.ObjetoCor.CorR = 0; obj_Circulo2.ObjetoCor.CorG = 0; obj_Circulo2.ObjetoCor.CorB = 0;
+      obj_Circulo2.PrimitivaTamanho = 5;
+      obj_Circulo2.PrimitivaTipo = PrimitiveType.Points;
+      objetosLista.Add(obj_Circulo2);
+      objetoSelecionado = obj_Circulo2;
+      obj_Circulo3 = new Circulo("A", null, 72, 100,ptCirculo3);
+      obj_Circulo3.ObjetoCor.CorR = 0; obj_Circulo3.ObjetoCor.CorG = 0; obj_Circulo3.ObjetoCor.CorB = 0;
+      obj_Circulo3.PrimitivaTamanho = 5;
+      obj_Circulo3.PrimitivaTipo = PrimitiveType.Points;
+      objetosLista.Add(obj_Circulo3);
+      objetoSelecionado = obj_Circulo3;
+
+      obj_SegReta = new SegmentoReta("4",null,ptCirculo1,ptCirculo2);
+      obj_SegReta.ObjetoCor.CorR = 0; obj_SegReta.ObjetoCor.CorG = 0; obj_SegReta.ObjetoCor.CorB = 0;
+      objetosLista.Add(obj_SegReta);
+      objetoSelecionado = obj_SegReta;
+      obj_SegReta2 = new SegmentoReta("5",null,ptCirculo2,ptCirculo3);
+      obj_SegReta2.ObjetoCor.CorR = 0; obj_SegReta2.ObjetoCor.CorG = 0; obj_SegReta2.ObjetoCor.CorB = 0;
+      objetosLista.Add(obj_SegReta2);
+      objetoSelecionado = obj_SegReta2;
+      obj_SegReta3 = new SegmentoReta("6",null,ptCirculo3,ptCirculo1);
+      obj_SegReta3.ObjetoCor.CorR = 0; obj_SegReta3.ObjetoCor.CorG = 0; obj_SegReta3.ObjetoCor.CorB = 0;
+      objetosLista.Add(obj_SegReta3);
+      objetoSelecionado = obj_SegReta3;
+
       // obj_Circulo.DesenharObjeto();
 
 #if CG_Privado
