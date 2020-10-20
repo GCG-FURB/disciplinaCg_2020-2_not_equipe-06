@@ -33,8 +33,9 @@ namespace gcgcg
     private bool bBoxDesenhar = false;
     int mouseX, mouseY;   //TODO: achar método MouseDown para não ter variável Global
     private bool mouseMoverPto = false;
-    // private Retangulo obj_Retangulo;
+    private Retangulo obj_Retangulo;
     private Circulo obj_Circulo;
+    private Circulo obj_Circulo2;
     private List<PrimitiveType> tipos = new List<PrimitiveType>();
     private int indexTipo = 0;
     private SegmentoReta obj_SegReta;
@@ -42,6 +43,7 @@ namespace gcgcg
     private int seqY =0;
     private int raio =100;
     private int angulo =45;
+    private double d;
     
     
 #if CG_Privado
@@ -52,7 +54,7 @@ namespace gcgcg
     protected override void OnLoad(EventArgs e)
     {
       base.OnLoad(e);
-      camera.xmin = -300; camera.xmax = 300; camera.ymin = -300; camera.ymax = 300;
+      camera.xmin = -100; camera.xmax = 500; camera.ymin = -100; camera.ymax = 500;
 
       Console.WriteLine(" --- Ajuda / Teclas: ");
       Console.WriteLine(" [  H     ] mostra teclas usadas. ");         
@@ -69,13 +71,27 @@ namespace gcgcg
       tipos.Add(PrimitiveType.Polygon);
 
 
-      obj_SegReta = new SegmentoReta("4",null,new Ponto4D(seqX,0,0),new Ponto4D(seqX+raio * Math.Cos(Math.PI * angulo / 180.0),seqY+raio * Math.Sin(Math.PI * angulo / 180.0),0));
-      obj_SegReta.ObjetoCor.CorR = 0; obj_SegReta.ObjetoCor.CorG = 0; obj_SegReta.ObjetoCor.CorB = 0;
-      obj_SegReta.PrimitivaTamanho = 5;
-      objetosLista.Add(obj_SegReta);
-      objetoSelecionado = obj_SegReta;
-      // obj_Circulo.DesenharObjeto();  
+      obj_Circulo = new Circulo("A",null,30,100,new Ponto4D(200,200));
+      obj_Circulo.ObjetoCor.CorR = 0;obj_Circulo.ObjetoCor.CorG = 0;obj_Circulo.ObjetoCor.CorB = 0;
+      objetosLista.Add(obj_Circulo);
+      objetoSelecionado = obj_Circulo;
+      
+      
+      // obj_Circulo.DesenharObjeto();
+      
 
+      obj_Retangulo = new Retangulo("A",null,new Ponto4D(200+100 * Math.Cos(Math.PI * 225 / 180.0),200+100 * Math.Sin(Math.PI * 225 / 180.0)),new Ponto4D(200+100 * Math.Cos(Math.PI * 45 / 180.0),200+100 * Math.Sin(Math.PI * 45 / 180.0)));
+      obj_Retangulo.ObjetoCor.CorR = 0;obj_Retangulo.ObjetoCor.CorG = 0;obj_Retangulo.ObjetoCor.CorB = 0;
+      objetosLista.Add(obj_Retangulo);
+      objetoSelecionado = obj_Retangulo;
+
+      obj_Circulo2 = new Circulo("A",null,30,25,new Ponto4D(200,200));
+      obj_Circulo2.ObjetoCor.CorR = 0;obj_Circulo2.ObjetoCor.CorG = 0;obj_Circulo2.ObjetoCor.CorB = 0;
+      objetosLista.Add(obj_Circulo2);
+      objetoSelecionado = obj_Circulo2;
+
+      mouseMoverPto = true;
+  //obj_SegReta = new SegmentoReta("4",null,new Ponto4D(seqX,0,0),new Ponto4D(seqX+raio * Math.Cos(Math.PI * angulo / 180.0),raio * Math.Sin(Math.PI * angulo / 180.0),0));
 #if CG_Privado
       obj_SegReta = new Privado_SegReta("B", null, new Ponto4D(50, 150), new Ponto4D(150, 250));
       obj_SegReta.ObjetoCor.CorR = 255; obj_SegReta.ObjetoCor.CorG = 255; obj_SegReta.ObjetoCor.CorB = 0;
@@ -176,38 +192,7 @@ namespace gcgcg
       {
         camera.xmin -= 10; camera.xmax += 10; camera.ymin -= 10; camera.ymax += 10;
       }
-      else if(e.Key == Key.Space){
-        indexTipo++;
-        if(indexTipo>9)
-          indexTipo = 0;
-        objetoSelecionado.PrimitivaTipo = tipos[indexTipo];
-      }
-      else if(e.Key ==Key.A){
-        raio = raio+10;
-        objetoSelecionado.PontosAlterar(new Ponto4D(seqX+raio * Math.Cos(Math.PI * angulo / 180.0),raio * Math.Sin(Math.PI * angulo / 180.0),0),1);
-      }
-      else if(e.Key ==Key.S){
-        raio = raio-10;
-        objetoSelecionado.PontosAlterar(new Ponto4D(seqX+raio * Math.Cos(Math.PI * angulo / 180.0),raio * Math.Sin(Math.PI * angulo / 180.0),0),1);
-      }
-      else if(e.Key ==Key.Z){
-        angulo = angulo+5;
-        objetoSelecionado.PontosAlterar(new Ponto4D(seqX+raio * Math.Cos(Math.PI * angulo / 180.0),raio * Math.Sin(Math.PI * angulo / 180.0),0),1);
-      }
-      else if(e.Key ==Key.X){
-        angulo = angulo-5;
-        objetoSelecionado.PontosAlterar(new Ponto4D(seqX+raio * Math.Cos(Math.PI * angulo / 180.0),raio * Math.Sin(Math.PI * angulo / 180.0),0),1);
-      }
-      else if(e.Key ==Key.Q){
-        seqX = seqX+5;
-        objetoSelecionado.PontosAlterar(new Ponto4D(seqX,0,0),0);
-        objetoSelecionado.PontosAlterar(new Ponto4D(seqX+raio * Math.Cos(Math.PI * angulo / 180.0),raio * Math.Sin(Math.PI * angulo / 180.0),0),1);
-      }
-      else if(e.Key ==Key.W){
-        seqX = seqX-5;
-        objetoSelecionado.PontosAlterar(new Ponto4D(seqX,0,0),0);
-        objetoSelecionado.PontosAlterar(new Ponto4D(seqX+raio * Math.Cos(Math.PI * angulo / 180.0),raio * Math.Sin(Math.PI * angulo / 180.0),0),1);
-      }
+      
       else
         Console.WriteLine(" __ Tecla não implementada.");
     }
@@ -215,12 +200,27 @@ namespace gcgcg
     //TODO: não está considerando o NDC
     protected override void OnMouseMove(MouseMoveEventArgs e)
     {
-      mouseX = e.Position.X; mouseY = 600 - e.Position.Y; // Inverti eixo Y
+      mouseX = e.Position.X-100; mouseY =-e.Position.Y+500; // Inverti eixo Y
       if (mouseMoverPto && (objetoSelecionado != null))
       {
-        objetoSelecionado.PontosUltimo().X = mouseX;
+        if(mouseX<=obj_Retangulo.pontosLista[2].X && mouseX>=obj_Retangulo.pontosLista[0].X && mouseY<=obj_Retangulo.pontosLista[2].Y && mouseY>=obj_Retangulo.pontosLista[0].Y ){
+          obj_Circulo2.centro.X=mouseX;
+          obj_Circulo2.centro.Y=mouseY;
+          obj_Retangulo.ObjetoCor.CorB=0;obj_Retangulo.ObjetoCor.CorG=0;
+        }
+        else{
+          obj_Retangulo.ObjetoCor.CorB=255;obj_Retangulo.ObjetoCor.CorG=255;
+          d = Math.Sqrt(Math.Pow(200-mouseX,2)+Math.Pow(200-mouseY,2));
+          if(d<=100){
+            obj_Circulo2.centro.X=mouseX;
+            obj_Circulo2.centro.Y=mouseY;
+          }
+        }
+        
+        
+        /*objetoSelecionado.PontosUltimo().X = mouseX;
         objetoSelecionado.PontosUltimo().Y = mouseY;
-      }
+      */}
     }
 
 #if CG_Gizmo
