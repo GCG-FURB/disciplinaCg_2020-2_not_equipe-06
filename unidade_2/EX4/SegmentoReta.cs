@@ -1,5 +1,5 @@
 /**
-  Autor: joao
+  Autor: João Victor Braun Quintino
 **/
 
 using OpenTK.Graphics.OpenGL;

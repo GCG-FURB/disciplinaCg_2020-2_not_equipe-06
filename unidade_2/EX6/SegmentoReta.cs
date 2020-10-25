@@ -10,10 +10,36 @@ namespace gcgcg
 {
   internal class SegmentoReta : ObjetoGeometria
   {
+    private Ponto4D pOriginal1;
+    private Ponto4D pOriginal2;
+
     public SegmentoReta(string rotulo, Objeto paiRef, Ponto4D a, Ponto4D b) : base(rotulo, paiRef)
     { 
+      pOriginal1 = new Ponto4D(a);
+      pOriginal2 = new Ponto4D(b);
       base.PontosAdicionar(a);
       base.PontosAdicionar(b);
+    }
+
+    public void RestaurarValoresIniciais()
+    {
+      base.PontosRemoverTodos();
+      base.PontosAdicionar(pOriginal1);
+      base.PontosAdicionar(pOriginal2);
+    }
+
+    public void SomarPonto(int posicao, double x, double y)
+    {
+      try
+      {
+          pontosLista[posicao].X += x;
+          pontosLista[posicao].Y += y;
+      }
+      catch (System.IndexOutOfRangeException e)
+      {
+          System.ArgumentException argumentException = new System.ArgumentException("Posição inválida", "posição", e);
+          throw argumentException;
+      }
     }
 
     protected override void DesenharObjeto()

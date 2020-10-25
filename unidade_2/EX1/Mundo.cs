@@ -108,8 +108,6 @@ namespace gcgcg
       }
       else if (e.Key == Key.O)
         bBoxDesenhar = !bBoxDesenhar;
-      else if (e.Key == Key.V)
-        mouseMoverPto = !mouseMoverPto;   //TODO: falta atualizar a BBox do objeto
       else
         Console.WriteLine(" __ Tecla não implementada.");
     }

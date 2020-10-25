@@ -1,3 +1,7 @@
+/**
+  Autor: Sara Helena Régis Theiss
+**/
+
 using System;
 using OpenTK.Graphics.OpenGL;
 using CG_Biblioteca;
