@@ -33,8 +33,7 @@ namespace gcgcg
     private bool bBoxDesenhar = false;
     int mouseX, mouseY;   //TODO: achar método MouseDown para não ter variável Global
     private bool mouseMoverPto = false;
-    // private Retangulo obj_Retangulo;
-    private Circulo obj_Circulo;
+    private Retangulo obj_Retangulo;
     private List<PrimitiveType> tipos = new List<PrimitiveType>();
     private int indexTipo = 0;
 #if CG_Privado
@@ -45,7 +44,7 @@ namespace gcgcg
     protected override void OnLoad(EventArgs e)
     {
       base.OnLoad(e);
-      camera.xmin = -300; camera.xmax = 300; camera.ymin = -300; camera.ymax = 300;
+      camera.xmin = -400; camera.xmax = 400; camera.ymin = -400; camera.ymax = 400;
 
       Console.WriteLine(" --- Ajuda / Teclas: ");
       Console.WriteLine(" [  H     ] mostra teclas usadas. ");         
@@ -61,13 +60,12 @@ namespace gcgcg
       tipos.Add(PrimitiveType.QuadStrip);
       tipos.Add(PrimitiveType.Polygon);
 
-      obj_Circulo = new Circulo("A", null, 72, 100, new Ponto4D(0,0));
-      obj_Circulo.ObjetoCor.CorR = 0; obj_Circulo.ObjetoCor.CorG = 0; obj_Circulo.ObjetoCor.CorB = 0;
-      obj_Circulo.PrimitivaTamanho = 5;
-      obj_Circulo.PrimitivaTipo = PrimitiveType.Points;
-      objetosLista.Add(obj_Circulo);
-      objetoSelecionado = obj_Circulo;
-      // obj_Circulo.DesenharObjeto();  
+      obj_Retangulo = new Retangulo("R", null, new Ponto4D(-200,-200), new Ponto4D(200,200));
+      obj_Retangulo.ObjetoCor.CorR = 255; obj_Retangulo.ObjetoCor.CorG = 0; obj_Retangulo.ObjetoCor.CorB = 0;
+      obj_Retangulo.PrimitivaTamanho = 2;
+      obj_Retangulo.PrimitivaTipo = PrimitiveType.Points;
+      objetosLista.Add(obj_Retangulo);
+      objetoSelecionado = obj_Retangulo;
 
 #if CG_Privado
       obj_SegReta = new Privado_SegReta("B", null, new Ponto4D(50, 150), new Ponto4D(150, 250));

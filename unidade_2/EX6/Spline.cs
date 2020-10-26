@@ -91,9 +91,7 @@ namespace gcgcg
     {      
       CarregarPontosSpline();
 
-      GL.LineWidth(base.PrimitivaTamanho);
       GL.Begin(base.PrimitivaTipo);
-      GL.Color3(base.ObjetoCor.CorR, base.ObjetoCor.CorG, base.ObjetoCor.CorB);
       foreach (Ponto4D pto in pontosSpline)
       {
         GL.Vertex2(pto.X, pto.Y);
