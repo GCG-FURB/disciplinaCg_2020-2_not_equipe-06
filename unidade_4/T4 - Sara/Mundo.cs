@@ -56,10 +56,10 @@ namespace gcgcg
       objetosLista.Add(obj_Tabuleiro);
       objetoSelecionado = obj_Tabuleiro;
 
-      Ponto4D pto = obj_Tabuleiro.getPontoInicialPeca(Ambiente.MEIO, 0, 0.8f);
-      obj_Dado = new Dado(Utilitario.charProximo(), null, pto, 0.8f, new Cor(0, 0, 255, 255), new Cor(255, 0, 0, 255));
-      objetosLista.Add(obj_Dado);
-      objetoSelecionado = obj_Dado;
+      // Ponto4D pto = obj_Tabuleiro.getPontoInicialPeca(Ambiente.MEIO, 0, 0.8f);
+      // obj_Dado = new Dado(Utilitario.charProximo(), null, pto, 0.8f, new Cor(0, 0, 255, 255), new Cor(255, 0, 0, 255));
+      // objetosLista.Add(obj_Dado);
+      // objetoSelecionado = obj_Dado;
 
 
       // camera.Eye = new Vector3(2, 2, 2);
@@ -136,8 +136,8 @@ namespace gcgcg
         objetoSelecionado = null;                     // desmacar objeto selecionado
       else if (e.Key == Key.B)
         bBoxDesenhar = !bBoxDesenhar;     //FIXME: bBox não está sendo atualizada.
-      else if (e.Key == Key.G)
-        obj_Dado.girarDado();
+      else if (e.Key == Key.Enter)
+        obj_Tabuleiro.enter();
       else if (e.Key == Key.E)
       {
         Console.WriteLine("--- Objetos / Pontos: ");

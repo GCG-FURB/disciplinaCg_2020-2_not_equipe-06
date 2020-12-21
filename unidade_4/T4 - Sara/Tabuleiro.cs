@@ -2,6 +2,7 @@
 using System;
 using OpenTK.Graphics.OpenGL;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CG_Biblioteca;
 
 namespace gcgcg
@@ -38,11 +39,23 @@ namespace gcgcg
         // quantidade de pontos de cada elemento do tabuleiro (quad)
         private int QUANTIDADE_PONTOS = 8;
 
-        protected List<int> trilha = new List<int>();
-        protected List<int> caminhoVermelho = new List<int>();
-        protected List<int> caminhoAzul = new List<int>();
-        protected List<int> casaAzul = new List<int>();
-        protected List<int> casaVermelha = new List<int>();
+        // salva o jogador da vez (1 para azul, 2 para vermelho)
+        private int jogador = 1;
+
+        // recebe true quando o jogador da vez tira um 6, para que ele possa jogar novamente
+        private bool jogarNovamente = false;
+
+        // objetos do tabuleiro
+        private Dado obj_Dado;
+        private List<Peca> pecasAzuis = new List<Peca>();
+        private List<Peca> pecasVermelhas = new List<Peca>();
+
+        // listas das posições dentro do tabuleiro
+        private List<int> trilha = new List<int>();
+        private List<int> caminhoVermelho = new List<int>();
+        private List<int> caminhoAzul = new List<int>();
+        private List<int> casaAzul = new List<int>();
+        private List<int> casaVermelha = new List<int>();
 
         public Tabuleiro(char rotulo, Objeto paiRef) : base(rotulo, paiRef)
         {      
@@ -189,7 +202,31 @@ namespace gcgcg
             addPontosFaces(5.8f, 7.2f, 0.0f, 0.2f, -3.6f, -5.0f);
 
             posTrilha += 64;
+
+            Ponto4D pto;
+
+            pto = getPontoInicialPeca(Ambiente.MEIO, 0, 0.8f);
+            obj_Dado = new Dado(Utilitario.charProximo(), this, pto, 0.8f, new Cor(0, 0, 255, 255), new Cor(255, 0, 0, 255));
+
+            Cor cor = new Cor(0,0,255,255);
+
+            Peca p;
+
+            for(int i = 0; i < 4; i++)
+            {
+                pto = getPontoInicialPeca(Ambiente.CASA_AZUL, i, 0.6f);
+                p = new Peca(Utilitario.charProximo(), this, pto, 0.6f, cor, Ambiente.CASA_AZUL, i);
+                pecasAzuis.Add(p);
+            }
             
+            cor = new Cor(255,0,0,255);
+
+            for(int i = 0; i < 4; i++)
+            {
+                pto = getPontoInicialPeca(Ambiente.CASA_VERMELHA, i, 0.6f);
+                p = new Peca(Utilitario.charProximo(), this, pto, 0.6f, cor, Ambiente.CASA_VERMELHA, i);
+                pecasVermelhas.Add(p);
+            }
         }
 
         private void addPontosFaces(float xEsquerda, float xDireita, float yBaixo, float yCima, float zFrente, float zTras)
@@ -338,23 +375,50 @@ namespace gcgcg
                 case Ambiente.CASA_VERMELHA:
                     pontoInicial = posCasaVermelha + posicao * QUANTIDADE_PONTOS;
                     break;
-                case Ambiente.CAMINHO_AZUL:
-                    pontoInicial = caminhoAzul[posicao];
-                    break;
-                case Ambiente.CAMINHO_VERMELHO:
-                    pontoInicial = caminhoVermelho[posicao];
-                    break;
+                // case Ambiente.CAMINHO_AZUL:
+                //     pontoInicial = caminhoAzul[posicao];
+                //     break;
+                // case Ambiente.CAMINHO_VERMELHO:
+                //     pontoInicial = caminhoVermelho[posicao];
+                //     break;
                 case Ambiente.MEIO:
                     pontoInicial = posDado;
                     break;
                 case Ambiente.TRILHA:
-                    pontoInicial = trilha[posicao];
+                    pontoInicial = trilha[posicao == 0 ? posJogadorAzul : posJogadorVermelho];
                     break;
             }
 
             // sentido anti-horário
-            double metade = tamanho / 2;
-            return (new Ponto4D(base.pontosLista[pontoInicial + a].X + 0.5 - metade, base.pontosLista[pontoInicial + c].Y+0.1, base.pontosLista[pontoInicial + a].Z - 0.5 + metade)); // A
+            double metadePeca = tamanho / 2;
+            double metadePlataforma = (base.pontosLista[pontoInicial + b].X - base.pontosLista[pontoInicial + a].X) / 2;
+
+            return (new Ponto4D(base.pontosLista[pontoInicial + a].X + metadePlataforma - metadePeca, base.pontosLista[pontoInicial + a].Y+0.1, base.pontosLista[pontoInicial + a].Z - metadePlataforma + metadePeca)); // A
+        }
+
+        public void enter()
+        {
+            Task.Run(async delegate
+            {
+                if(!jogarNovamente)
+                {
+                    if(jogador == 1)
+                        jogador = 2;
+                    else
+                        jogador = 1;
+                    
+                    obj_Dado.mudaCor(jogador);
+                }
+                int numero = obj_Dado.girarDado();
+
+                if(numero == 6)
+                    jogarNovamente = true;
+                else
+                    jogarNovamente = false;
+                
+
+                await Task.Delay(5000);
+            });
         }
 
         public override string ToString()

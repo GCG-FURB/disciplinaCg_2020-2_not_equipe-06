@@ -1,7 +1,6 @@
 using OpenTK.Graphics.OpenGL;
 using CG_Biblioteca;
 using System;
-using System.Collections.Generic;
 
 namespace gcgcg
 {
@@ -21,9 +20,9 @@ namespace gcgcg
         private int numero = 0; // o número atual sorteado para o dado (aparece em cima), começando por 0 para representar o 1
         private float tamanhoDado = 0;
         private int[] numeros = new int[6] {5,4,3,2,1,0};
+        private Cor cor;
         private Cor cor1;
         private Cor cor2;
-        private int corAtual = 0;
 
         public Dado(char rotulo, Objeto paiRef, Ponto4D pontoInicial, float tamanho, Cor a, Cor b) : base(rotulo, paiRef)
         {      
@@ -40,64 +39,9 @@ namespace gcgcg
             cor1 = a;
             cor2 = b;
 
-            sortearNumero();
-        }
+            cor = new Cor(255,255,255,255);
 
-        public void mudaCor()
-        {
-            // muda a cor do jogador atual
-            if(corAtual == 0 || corAtual == 2)
-                corAtual = 1;
-            else
-                corAtual = 2;
-
-        }
-
-        public int girarDado()
-        {
-            // sorteia um novo número
-            numero = r.Next(0, 6);
-            base.FilhosRemoverTodos(); // remove todos os círculos do dado
-
-            // adiciona os novos círculos com base no novo número
-            int[] verifica = new int[6] {0,0,0,0,0,0};
-
-            desenhaNumeroDado(numero, Face.CIMA); // o número sorteado sempre ficará em cima
-            verifica[numero] = 1;
-
-            desenhaNumeroDado(numeros[numero], Face.BAIXO); // o número oposto sempre ficará embaixo
-            verifica[numeros[numero]] = 1;
-
-            bool primeiraDupla = true;
-            for(int i = 0; i < 6; i++)
-            {
-                if(verifica[i] == 0) // verifica os número que ainda não foram adicionados
-                {
-                    if(primeiraDupla) // os dois segundos números ficam na frente e atrás
-                    {
-                        desenhaNumeroDado(i, Face.FRENTE);
-                        verifica[i] = 1;
-
-                        desenhaNumeroDado(numeros[i], Face.FUNDO);
-                        verifica[numeros[i]] = 1;
-
-                        primeiraDupla = false;
-                    }
-                    else // os dois últimos números ficam na direita e esquerda
-                    {
-                        desenhaNumeroDado(i, Face.DIREITA);
-                        verifica[i] = 1;
-
-                        desenhaNumeroDado(numeros[i], Face.ESQUERDA);
-                        verifica[numeros[i]] = 1;
-
-                        break;
-                    }
-                    
-                }
-            }
-
-            return numero;
+            girarDado();
         }
 
         // desenha o número em uma face do dado
@@ -107,7 +51,6 @@ namespace gcgcg
             int[] intervaloA = new int[6] {2,4,6,4,6,4};
             int[] intervaloB = new int[6] {2,4,6,4,6,6};
             
-            List<Ponto4D> circulos = new List<Ponto4D>();
             Eixos eixos = Eixos.X_Y;
             Ponto4D ptoCentro = null;
             Circulo c;
@@ -185,86 +128,107 @@ namespace gcgcg
 
         protected override void DesenharObjeto()
         {   
-            GL.Color3(1f,1f,1f);
-
             // Sentido anti-horário
             GL.Begin(PrimitiveType.Quads);
-            // Face da frente (vermelho)
+            // Face da frente
             GL.Normal3(0, 0, 1);        
             GL.Vertex3(base.pontosLista[0].X, base.pontosLista[0].Y, base.pontosLista[0].Z);    // PtoA
             GL.Vertex3(base.pontosLista[1].X, base.pontosLista[1].Y, base.pontosLista[1].Z);    // PtoB
             GL.Vertex3(base.pontosLista[2].X, base.pontosLista[2].Y, base.pontosLista[2].Z);    // PtoC
             GL.Vertex3(base.pontosLista[3].X, base.pontosLista[3].Y, base.pontosLista[3].Z);    // PtoD
-            // Face do fundo ([verde)
+            // Face do fundo
             GL.Normal3(0, 0, -1);
             GL.Vertex3(base.pontosLista[4].X, base.pontosLista[4].Y, base.pontosLista[4].Z);    // PtoE
             GL.Vertex3(base.pontosLista[7].X, base.pontosLista[7].Y, base.pontosLista[7].Z);    // PtoH
             GL.Vertex3(base.pontosLista[6].X, base.pontosLista[6].Y, base.pontosLista[6].Z);    // PtoG
             GL.Vertex3(base.pontosLista[5].X, base.pontosLista[5].Y, base.pontosLista[5].Z);    // PtoF
-            // Face de cima (azul)
+            
+            GL.Color3(cor.CorR/255f, cor.CorG/255f, cor.CorB/255f);
+            // Face de cima
             GL.Normal3(0, 1, 0);
             GL.Vertex3(base.pontosLista[3].X, base.pontosLista[3].Y, base.pontosLista[3].Z);    // PtoD
             GL.Vertex3(base.pontosLista[2].X, base.pontosLista[2].Y, base.pontosLista[2].Z);    // PtoC
             GL.Vertex3(base.pontosLista[6].X, base.pontosLista[6].Y, base.pontosLista[6].Z);    // PtoG
             GL.Vertex3(base.pontosLista[7].X, base.pontosLista[7].Y, base.pontosLista[7].Z);    // PtoH
-            // Face de baixo (amarelo)
+            // Face de baixo
             GL.Normal3(0, -1, 0);
             GL.Vertex3(base.pontosLista[0].X, base.pontosLista[0].Y, base.pontosLista[0].Z);    // PtoA
             GL.Vertex3(base.pontosLista[4].X, base.pontosLista[4].Y, base.pontosLista[4].Z);    // PtoE
             GL.Vertex3(base.pontosLista[5].X, base.pontosLista[5].Y, base.pontosLista[5].Z);    // PtoF
             GL.Vertex3(base.pontosLista[1].X, base.pontosLista[1].Y, base.pontosLista[1].Z);    // PtoB
-            // Face da direita (ciano)
+
+            GL.Color3(0.9f,0.9f,0.9f);
+            // Face da direita
             GL.Normal3(1, 0, 0);
             GL.Vertex3(base.pontosLista[1].X, base.pontosLista[1].Y, base.pontosLista[1].Z);    // PtoB
             GL.Vertex3(base.pontosLista[5].X, base.pontosLista[5].Y, base.pontosLista[5].Z);    // PtoF
             GL.Vertex3(base.pontosLista[6].X, base.pontosLista[6].Y, base.pontosLista[6].Z);    // PtoG
             GL.Vertex3(base.pontosLista[2].X, base.pontosLista[2].Y, base.pontosLista[2].Z);    // PtoC
-            // Face da esquerda (magenta)
+            // Face da esquerda
             GL.Normal3(-1, 0, 0);
             GL.Vertex3(base.pontosLista[0].X, base.pontosLista[0].Y, base.pontosLista[0].Z);    // PtoA
             GL.Vertex3(base.pontosLista[3].X, base.pontosLista[3].Y, base.pontosLista[3].Z);    // PtoD
             GL.Vertex3(base.pontosLista[7].X, base.pontosLista[7].Y, base.pontosLista[7].Z);    // PtoH
             GL.Vertex3(base.pontosLista[4].X, base.pontosLista[4].Y, base.pontosLista[4].Z);    // PtoE
             GL.End();
-
-            if(corAtual == 1)
-                GL.Color3(cor1.CorR, cor1.CorG, cor1.CorB);
-            else if(corAtual == 2)
-                GL.Color3(cor2.CorR, cor2.CorG, cor2.CorB);
-            else
-                GL.Color3(0f,0f,0f);
-
-            GL.LineWidth(3);
-            GL.Begin(PrimitiveType.Lines);
-            GL.Vertex3(base.pontosLista[0].X, base.pontosLista[0].Y, base.pontosLista[0].Z);    // PtoA
-            GL.Vertex3(base.pontosLista[1].X, base.pontosLista[1].Y, base.pontosLista[1].Z);    // PtoB
-            GL.Vertex3(base.pontosLista[1].X, base.pontosLista[1].Y, base.pontosLista[1].Z);    // PtoB
-            GL.Vertex3(base.pontosLista[2].X, base.pontosLista[2].Y, base.pontosLista[2].Z);    // PtoC
-            GL.Vertex3(base.pontosLista[2].X, base.pontosLista[2].Y, base.pontosLista[2].Z);    // PtoC
-            GL.Vertex3(base.pontosLista[3].X, base.pontosLista[3].Y, base.pontosLista[3].Z);    // PtoD
-            GL.Vertex3(base.pontosLista[3].X, base.pontosLista[3].Y, base.pontosLista[3].Z);    // PtoD
-            GL.Vertex3(base.pontosLista[0].X, base.pontosLista[0].Y, base.pontosLista[0].Z);    // PtoA
-            GL.Vertex3(base.pontosLista[0].X, base.pontosLista[0].Y, base.pontosLista[0].Z);    // PtoA
-            GL.Vertex3(base.pontosLista[4].X, base.pontosLista[4].Y, base.pontosLista[4].Z);    // PtoE
-            GL.Vertex3(base.pontosLista[4].X, base.pontosLista[4].Y, base.pontosLista[4].Z);    // PtoE
-            GL.Vertex3(base.pontosLista[5].X, base.pontosLista[5].Y, base.pontosLista[5].Z);    // PtoF
-            GL.Vertex3(base.pontosLista[5].X, base.pontosLista[5].Y, base.pontosLista[5].Z);    // PtoF
-            GL.Vertex3(base.pontosLista[1].X, base.pontosLista[1].Y, base.pontosLista[1].Z);    // PtoB
-            GL.Vertex3(base.pontosLista[5].X, base.pontosLista[5].Y, base.pontosLista[5].Z);    // PtoF
-            GL.Vertex3(base.pontosLista[6].X, base.pontosLista[6].Y, base.pontosLista[6].Z);    // PtoG
-            GL.Vertex3(base.pontosLista[6].X, base.pontosLista[6].Y, base.pontosLista[6].Z);    // PtoG
-            GL.Vertex3(base.pontosLista[7].X, base.pontosLista[7].Y, base.pontosLista[7].Z);    // PtoH
-            GL.Vertex3(base.pontosLista[6].X, base.pontosLista[6].Y, base.pontosLista[6].Z);    // PtoG
-            GL.Vertex3(base.pontosLista[2].X, base.pontosLista[2].Y, base.pontosLista[2].Z);    // PtoC
-            GL.Vertex3(base.pontosLista[7].X, base.pontosLista[7].Y, base.pontosLista[7].Z);    // PtoH
-            GL.Vertex3(base.pontosLista[4].X, base.pontosLista[4].Y, base.pontosLista[4].Z);    // PtoE
-            GL.Vertex3(base.pontosLista[7].X, base.pontosLista[7].Y, base.pontosLista[7].Z);    // PtoH
-            GL.Vertex3(base.pontosLista[3].X, base.pontosLista[3].Y, base.pontosLista[3].Z);    // PtoD
-            GL.End();
-
         }
 
-        //TODO: melhorar para exibir não só a lista de pontos (geometria), mas também a topologia ... poderia ser listado estilo OBJ da Wavefrom
+        public void mudaCor(int jogador)
+        {
+            // muda a cor do jogador atual
+            if(jogador == 1)
+                cor = cor1;
+            else
+                cor = cor2;
+        }
+
+        public int girarDado()
+        {
+            // sorteia um novo número
+            numero = r.Next(0, 6);
+            base.FilhosRemoverTodos(); // remove todos os círculos do dado
+
+            // adiciona os novos círculos com base no novo número
+            int[] verifica = new int[6] {0,0,0,0,0,0};
+
+            desenhaNumeroDado(numero, Face.CIMA); // o número sorteado sempre ficará em cima
+            verifica[numero] = 1;
+
+            desenhaNumeroDado(numeros[numero], Face.BAIXO); // o número oposto sempre ficará embaixo
+            verifica[numeros[numero]] = 1;
+
+            bool primeiraDupla = true;
+            for(int i = 0; i < 6; i++)
+            {
+                if(verifica[i] == 0) // verifica os número que ainda não foram adicionados
+                {
+                    if(primeiraDupla) // os dois segundos números ficam na frente e atrás
+                    {
+                        desenhaNumeroDado(i, Face.FRENTE);
+                        verifica[i] = 1;
+
+                        desenhaNumeroDado(numeros[i], Face.FUNDO);
+                        verifica[numeros[i]] = 1;
+
+                        primeiraDupla = false;
+                    }
+                    else // os dois últimos números ficam na direita e esquerda
+                    {
+                        desenhaNumeroDado(i, Face.DIREITA);
+                        verifica[i] = 1;
+
+                        desenhaNumeroDado(numeros[i], Face.ESQUERDA);
+                        verifica[numeros[i]] = 1;
+
+                        break;
+                    }
+                    
+                }
+            }
+
+            return numero + 1; // retorna o numero = 1, para representar o número real que deve ser usado no tabuleiro
+        }
+
         public override string ToString()
         {
             string retorno;
