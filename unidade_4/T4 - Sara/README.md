@@ -1,6 +1,5 @@
-# Diagrama de Classes
-Classes utilizadas neste exemplo.
+# Cenário Ludo
 
-![Diagrama de Classes](https://github.com/dalton-reis/gcg-cg/blob/master/CG_N4/docs/diagrams/docs/umlClasses/Diagrama%20de%20Classes.svg)
-
-by PlantUML.
+Fez para dois jogadores, faz o sorteio de jogo por dado.
+Não conseguiu usar a textura.
+Desenhou o circulo na mão para fazer o dado.
