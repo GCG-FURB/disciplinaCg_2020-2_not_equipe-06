@@ -6,14 +6,19 @@ namespace gcgcg
 {
     internal class Peca : ObjetoGeometria
     {
-        private float tamanhoPeca = 0;
         private Cor cor;
+        private float tamanhoPeca = 0;
+        public float TamanhoPeca { get => tamanhoPeca; }
         private Ambiente ambiente;
         public Ambiente AmbientePeca { get => ambiente; set => ambiente = value; }
         private int posicao;
-        private int Posicao { get => posicao; set => posicao = value; }
+        public int Posicao { get => posicao; set => posicao = value; }
+        private int jogador;
+        public int Jogador { get => jogador; }
+        private int indicePeca;
+        public int IndicePeca { get => indicePeca; }
 
-        public Peca(char rotulo, Objeto paiRef, Ponto4D pontoInicial, float tamanho, Cor cor, Ambiente ambiente, int posicao = 0) : base(rotulo, paiRef)
+        public Peca(char rotulo, Objeto paiRef, Ponto4D pontoInicial, float tamanho, int jogador, Cor cor, Ambiente ambiente, int posicao = 0) : base(rotulo, paiRef)
         {      
             base.PontosAdicionar(new Ponto4D(pontoInicial.X, pontoInicial.Y, pontoInicial.Z));
             base.PontosAdicionar(new Ponto4D(pontoInicial.X + tamanho, pontoInicial.Y, pontoInicial.Z));
@@ -23,10 +28,12 @@ namespace gcgcg
             base.PontosAdicionar(new Ponto4D(pontoInicial.X + tamanho, pontoInicial.Y, pontoInicial.Z - tamanho));
             base.PontosAdicionar(new Ponto4D(pontoInicial.X + tamanho, pontoInicial.Y + tamanho, pontoInicial.Z - tamanho));
             base.PontosAdicionar(new Ponto4D(pontoInicial.X, pontoInicial.Y + tamanho, pontoInicial.Z - tamanho));
-            tamanhoPeca = tamanho;
+            this.tamanhoPeca = tamanho;
             this.cor = cor;
             this.ambiente = ambiente;
             this.posicao = posicao;
+            this.jogador = jogador;
+            this.indicePeca = posicao;
         }
 
         protected override void DesenharObjeto()
@@ -34,7 +41,6 @@ namespace gcgcg
             float r = cor.CorR - 70f > 0f ? cor.CorR - 70f : 0f;
             float g = cor.CorG - 70f > 0f ? cor.CorG - 70f : 0f;
             float b = cor.CorB - 70f > 0f ? cor.CorB - 70f : 0f;
-            // Cor c = new Cor(cor.CorR - 70 > 0 ? cor.CorR - 70 : 0, cor.CorG - 70 > 0 ? cor.CorG - 70 : 0, cor.CorB - 70 > 0 ? cor.CorB - 70 : 0, 255);
             GL.Color3(r/255f,g/255f,b/255f);
             // Sentido anti-horário
             GL.Begin(PrimitiveType.Quads);
@@ -81,7 +87,7 @@ namespace gcgcg
             GL.End();
         }
 
-        public movePeca(Ponto4D novoPonto)
+        public void movePeca(Ponto4D novoPonto)
         {
             int cont = 0;
             base.PontosAlterar(new Ponto4D(novoPonto.X, novoPonto.Y, novoPonto.Z), cont++);

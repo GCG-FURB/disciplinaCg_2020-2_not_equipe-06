@@ -1,9 +1,12 @@
 
 using System;
+using OpenTK;
+// using OpenTK.Input;
 using OpenTK.Graphics.OpenGL;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CG_Biblioteca;
+
 
 namespace gcgcg
 {
@@ -14,7 +17,9 @@ namespace gcgcg
         CAMINHO_AZUL,
         CAMINHO_VERMELHO,
         MEIO,
-        TRILHA
+        TRILHA,
+        SALVO_AZUL,
+        SALVO_VERMELHO
     }
 
     internal class Tabuleiro : ObjetoGeometria
@@ -22,6 +27,10 @@ namespace gcgcg
         // indica a posição na trilha onde cada jogador (azul e vermelho) iniciam
         private int posJogadorAzul; 
         private int posJogadorVermelho;
+
+        // indica a posição na trilha onde cada jogador (azul e vermelho) terminam a trilha
+        private int posTerminaAzul; 
+        private int posTerminaVermelho;
 
         // indica a posição central onde o dado deve ser colocado
         private int posDado;
@@ -45,6 +54,16 @@ namespace gcgcg
         // recebe true quando o jogador da vez tira um 6, para que ele possa jogar novamente
         private bool jogarNovamente = false;
 
+        // salva a quantidade de peças restantes no tabuleiro para cada jogador
+        // o primeiro que chegar a zero vence a partida
+        private int qntRestanteAzul = 4;
+        private int qntRestanteVermelho = 4;
+
+        // indica quando o dado não poderá ser jogado por ter uma peça em movimento
+        private bool pausa = false;
+
+        private CameraPerspective camera;
+
         // objetos do tabuleiro
         private Dado obj_Dado;
         private List<Peca> pecasAzuis = new List<Peca>();
@@ -56,9 +75,17 @@ namespace gcgcg
         private List<int> caminhoAzul = new List<int>();
         private List<int> casaAzul = new List<int>();
         private List<int> casaVermelha = new List<int>();
+        private List<int> salvoAzul = new List<int>();
+        private List<int> salvoVermelho = new List<int>();
 
-        public Tabuleiro(char rotulo, Objeto paiRef) : base(rotulo, paiRef)
+        // salva cor do chão (a cor muda para azul ou vermelho quando um jogador vencer)
+        private Cor cor = new Cor(0, 142, 0, 255);
+        private Cor corSombra = new Cor(0, 82, 0, 255);
+
+        public Tabuleiro(char rotulo, Objeto paiRef, CameraPerspective c) : base(rotulo, paiRef)
         {      
+            camera = c;
+            
             // adiciona chão
             addPontosFaces(-9.1f, 9.1f, -0.2f, 0.0f, 9.1f, -9.1f);
 
@@ -79,14 +106,22 @@ namespace gcgcg
                     // salva a posição das plataformas importantes do jogo
                     if (i == 1 && j == 2)
                     {
-                        posJogadorAzul = posTrilha;
+                        posJogadorAzul = trilha.Count - 1;
                     }
                     else if (i == 7 && j == 2)
                     {
-                        posJogadorVermelho = posTrilha;
+                        posJogadorVermelho = trilha.Count - 1;
+                    }
+                    else if (i == 6 && j == 2)
+                    {
+                        posTerminaVermelho = trilha.Count - 1;
+                    }
+                    else if (i == 12 && j == 2)
+                    {
+                        posTerminaAzul = trilha.Count - 1;
                     }
 
-                    posTrilha += 8;
+                    posTrilha += QUANTIDADE_PONTOS;
 
                     // muda as variáveis para a próxima plataforma
                     if ( (i % 3 == 0 && j != 3) || (i % 3 != 0 && j != 7) )
@@ -165,19 +200,33 @@ namespace gcgcg
             addPontosFaces(-8.9f, -2.9f, 0.0f, 0.6f, 2.9f, 1.9f);
             addPontosFaces(-8.9f, -7.9f, 0.0f, 0.6f, 8.9f, 2.9f);
             addPontosFaces(-7.9f, -1.9f, 0.0f, 0.6f, 8.9f, 7.9f);
+
+            posTrilha += 32;
             
                 // plataformas das peças
-            posCasaAzul = posTrilha+32;
-            casaAzul.Add(posTrilha+32);
-            casaAzul.Add(posTrilha+40);
-            casaAzul.Add(posTrilha+48);
-            casaAzul.Add(posTrilha+56);
+            posCasaAzul = posTrilha;
+            casaAzul.Add(posTrilha);
+            casaAzul.Add(posTrilha+8);
+            casaAzul.Add(posTrilha+16);
+            casaAzul.Add(posTrilha+24);
             addPontosFaces(-5.0f, -3.6f, 0.0f, 0.2f, 7.2f, 5.8f);
             addPontosFaces(-7.2f, -5.8f, 0.0f, 0.2f, 7.2f, 5.8f);
             addPontosFaces(-5.0f, -3.6f, 0.0f, 0.2f, 5.0f, 3.6f);
             addPontosFaces(-7.2f, -5.8f, 0.0f, 0.2f, 5.0f, 3.6f);
 
-            posTrilha += 64;
+            posTrilha += 32;
+            
+                // plataformas das peças salvas
+            salvoAzul.Add(posTrilha);
+            salvoAzul.Add(posTrilha+8);
+            salvoAzul.Add(posTrilha+16);
+            salvoAzul.Add(posTrilha+24);
+            addPontosFaces(3.6f, 5.0f, 0.0f, 0.2f, 7.2f, 5.8f);
+            addPontosFaces(5.8f, 7.2f, 0.0f, 0.2f, 7.2f, 5.8f);
+            addPontosFaces(3.6f, 5.0f, 0.0f, 0.2f, 5.0f, 3.6f);
+            addPontosFaces(5.8f, 7.2f, 0.0f, 0.2f, 5.0f, 3.6f);
+
+            posTrilha += 32;
 
             // adiciona os pontos da casa vermelha
                 // muros da casa
@@ -189,43 +238,194 @@ namespace gcgcg
             addPontosFaces(2.9f, 8.9f, 0.0f, 0.6f, -1.9f, -2.9f);
             addPontosFaces(7.9f, 8.9f, 0.0f, 0.6f, -2.9f, -8.9f);
             addPontosFaces(1.9f, 7.9f, 0.0f, 0.6f, -7.9f, -8.9f);
+
+            posTrilha += 32;
             
                 // plataformas das peças
-            posCasaVermelha = posTrilha+32;
-            casaVermelha.Add(posTrilha+32);
-            casaVermelha.Add(posTrilha+40);
-            casaVermelha.Add(posTrilha+48);
-            casaVermelha.Add(posTrilha+56);
+            posCasaVermelha = posTrilha;
+            casaVermelha.Add(posTrilha);
+            casaVermelha.Add(posTrilha+8);
+            casaVermelha.Add(posTrilha+16);
+            casaVermelha.Add(posTrilha+24);
             addPontosFaces(3.6f, 5.0f, 0.0f, 0.2f, -5.8f, -7.2f);
             addPontosFaces(5.8f, 7.2f, 0.0f, 0.2f, -5.8f, -7.2f);
             addPontosFaces(3.6f, 5.0f, 0.0f, 0.2f, -3.6f, -5.0f);
             addPontosFaces(5.8f, 7.2f, 0.0f, 0.2f, -3.6f, -5.0f);
 
-            posTrilha += 64;
+            posTrilha += 32;
+            
+                // plataformas das peças salvas
+            salvoVermelho.Add(posTrilha);
+            salvoVermelho.Add(posTrilha+8);
+            salvoVermelho.Add(posTrilha+16);
+            salvoVermelho.Add(posTrilha+24);
+            addPontosFaces(-5.0f, -3.6f, 0.0f, 0.2f, -5.8f, -7.2f);
+            addPontosFaces(-7.2f, -5.8f, 0.0f, 0.2f, -5.8f, -7.2f);
+            addPontosFaces(-5.0f, -3.6f, 0.0f, 0.2f, -3.6f, -5.0f);
+            addPontosFaces(-7.2f, -5.8f, 0.0f, 0.2f, -3.6f, -5.0f);
+
+            posTrilha += 32;
 
             Ponto4D pto;
 
+
+            // adiciona dado
             pto = getPontoInicialPeca(Ambiente.MEIO, 0, 0.8f);
             obj_Dado = new Dado(Utilitario.charProximo(), this, pto, 0.8f, new Cor(0, 0, 255, 255), new Cor(255, 0, 0, 255));
 
-            Cor cor = new Cor(0,0,255,255);
-
             Peca p;
 
+            Cor cor = new Cor(0,0,255,255);
+
+            // adiciona peças azuis
             for(int i = 0; i < 4; i++)
             {
                 pto = getPontoInicialPeca(Ambiente.CASA_AZUL, i, 0.6f);
-                p = new Peca(Utilitario.charProximo(), this, pto, 0.6f, cor, Ambiente.CASA_AZUL, i);
+                p = new Peca(Utilitario.charProximo(), this, pto, 0.6f, 1, cor, Ambiente.CASA_AZUL, i);
                 pecasAzuis.Add(p);
             }
             
             cor = new Cor(255,0,0,255);
 
+            // adiciona peças vermelhas
             for(int i = 0; i < 4; i++)
             {
                 pto = getPontoInicialPeca(Ambiente.CASA_VERMELHA, i, 0.6f);
-                p = new Peca(Utilitario.charProximo(), this, pto, 0.6f, cor, Ambiente.CASA_VERMELHA, i);
+                p = new Peca(Utilitario.charProximo(), this, pto, 0.6f, 2, cor, Ambiente.CASA_VERMELHA, i);
                 pecasVermelhas.Add(p);
+            }
+        }
+
+        private Ponto4D getPontoInicialPeca(Ambiente amb, int posicao = 0, float tamanho = 0.6f)
+        {
+            int pontoInicial = 0;
+            switch(amb)
+            {
+                case Ambiente.CASA_AZUL:
+                    pontoInicial = posCasaAzul + posicao * QUANTIDADE_PONTOS;
+                    break;
+                case Ambiente.CASA_VERMELHA:
+                    pontoInicial = posCasaVermelha + posicao * QUANTIDADE_PONTOS;
+                    break;
+                case Ambiente.MEIO:
+                    pontoInicial = posDado;
+                    break;
+            }
+
+            // sentido anti-horário
+            double metadePeca = tamanho / 2;
+            double metadePlataforma = (base.pontosLista[pontoInicial + b].X - base.pontosLista[pontoInicial + a].X) / 2;
+
+            return (new Ponto4D(base.pontosLista[pontoInicial + a].X + metadePlataforma - metadePeca, base.pontosLista[pontoInicial + a].Y+0.1, base.pontosLista[pontoInicial + a].Z - metadePlataforma + metadePeca)); // A
+        }
+
+        private Ponto4D getProximaPosicao(Peca p)
+        {
+            int pos = -1;
+            switch(p.AmbientePeca)
+            {
+                case Ambiente.CASA_AZUL:
+                    pos = trilha[posJogadorAzul];
+                    p.AmbientePeca = Ambiente.TRILHA;
+                    p.Posicao = posJogadorAzul;
+                    break;
+                case Ambiente.CASA_VERMELHA:
+                    pos = trilha[posJogadorVermelho];
+                    p.AmbientePeca = Ambiente.TRILHA;
+                    p.Posicao = posJogadorVermelho;
+                    break;
+                case Ambiente.CAMINHO_AZUL:
+                    if(p.Posicao < caminhoAzul.Count - 1)
+                    {
+                        pos = caminhoAzul[++(p.Posicao)];
+                    }
+                    else
+                    {
+                        pos = salvoAzul[p.IndicePeca];
+                        p.AmbientePeca = Ambiente.SALVO_AZUL;
+                        p.Posicao = p.IndicePeca;
+                    }
+                    break;
+                case Ambiente.CAMINHO_VERMELHO:
+                    if(p.Posicao > 0)
+                    {
+                        pos = caminhoVermelho[--(p.Posicao)];
+                    }
+                    else
+                    {
+                        pos = salvoVermelho[p.IndicePeca];
+                        p.AmbientePeca = Ambiente.SALVO_VERMELHO;
+                        p.Posicao = p.IndicePeca;
+                    }
+                    break;
+                case Ambiente.TRILHA:
+                    if(p.Jogador == 1 && p.Posicao == posTerminaAzul)
+                    {
+                        pos = caminhoAzul[0];
+                        p.AmbientePeca = Ambiente.CAMINHO_AZUL;
+                        p.Posicao = 0;
+                    }
+                    else if(p.Jogador == 2 && p.Posicao == posTerminaVermelho)
+                    {
+                        pos = caminhoVermelho[caminhoVermelho.Count - 1];
+                        p.AmbientePeca = Ambiente.CAMINHO_VERMELHO;
+                        p.Posicao = caminhoVermelho.Count - 1;
+                    }
+                    else
+                    {
+                        if(p.Posicao == trilha.Count - 1)
+                        {
+                            p.Posicao = -1;
+                        }
+                        pos = trilha[++(p.Posicao)];
+                    }
+                    break;
+            }
+            // sentido anti-horário
+            double metadePeca = p.TamanhoPeca / 2;
+            double metadePlataforma = (base.pontosLista[pos + b].X - base.pontosLista[pos + a].X) / 2;
+
+            return (new Ponto4D(base.pontosLista[pos + a].X + metadePlataforma - metadePeca, base.pontosLista[pos + a].Y+0.1, base.pontosLista[pos + a].Z - metadePlataforma + metadePeca)); // A
+        }
+
+        private async void movePeca(Peca p, int numero)
+        {
+            pausa = true;
+            Ponto4D pto;
+            for(int i = 0; i < numero; i++)
+            {
+                pto = getProximaPosicao(p);
+                p.movePeca(pto);
+                await Task.Delay(100);
+            }
+            pausa = false;
+
+            if( (p.AmbientePeca == Ambiente.CAMINHO_AZUL && p.Posicao == 5) ||
+                (p.AmbientePeca == Ambiente.CAMINHO_VERMELHO && p.Posicao == 0) )
+            {
+                pto = getProximaPosicao(p);
+                p.movePeca(pto);
+
+                if(p.Jogador == 1)
+                {
+                    qntRestanteAzul--;
+                    if(qntRestanteAzul == 0)
+                    {
+                        cor = new Cor(85,85,255,255);
+                        corSombra = new Cor(0,0,157,255);
+                        Console.WriteLine("--- JOGADOR AZUL VENCEU!!! ---");
+                    }
+                }
+                else
+                {
+                    qntRestanteVermelho--;
+                    if(qntRestanteVermelho == 0)
+                    {
+                        cor = new Cor(255,85,85,255);
+                        corSombra = new Cor(157,0,0,255);
+                        Console.WriteLine("--- JOGADOR VERMELHO VENCEU!!! ---");
+                    }
+                }
             }
         }
 
@@ -297,33 +497,31 @@ namespace gcgcg
         protected override void DesenharObjeto()
         {   
             // Cria chão do jogo
-            addFaces(0, new Cor(0, 142, 0, 255), new Cor(0, 82, 0, 255));
+            addFaces(0, cor, corSombra);
 
             // Cria as plataformas da trilha
-            foreach (int pos in trilha)
+            for(int i = 0; i < trilha.Count; i++)
             {
-                if(pos == posJogadorAzul)
-                    addFaces(pos, new Cor(0, 0, 255, 255), new Cor(0, 0, 179, 255)); // azul
-                else if(pos == posJogadorVermelho)
-                    addFaces(pos, new Cor(255, 0, 0, 255), new Cor(196, 0, 0, 255)); // vermelho
+                if(i == posJogadorAzul)
+                    addFaces(trilha[i], new Cor(0, 0, 255, 255), new Cor(0, 0, 179, 255)); // azul
+                else if(i == posJogadorVermelho)
+                    addFaces(trilha[i], new Cor(255, 0, 0, 255), new Cor(196, 0, 0, 255)); // vermelho
                 else
-                    addFaces(pos, new Cor(255, 255, 255, 255), new Cor(218, 218, 218, 255)); // branco
+                    addFaces(trilha[i], new Cor(255, 255, 255, 255), new Cor(218, 218, 218, 255)); // branco
             }
-            int cont = 0;
             // Cria as plataformas do caminho azul (caminho que leva o jogador para a vitória)
-            foreach (int pos in caminhoAzul)
+            for(int i = 0; i < caminhoAzul.Count; i++)
             {
-                cont++;
-                addFaces(pos, new Cor(0, 0, 255, 255), new Cor(0, 0, 179, 255)); // azul
-                if(cont == 6)
+                addFaces(caminhoAzul[i], new Cor(0, 0, 255, 255), new Cor(0, 0, 179, 255)); // azul
+                if(i == 5)
                 {
                     GL.LineWidth(2);
                     GL.Begin(PrimitiveType.LineLoop);
                     GL.Color3(1f,1f,1f);
-                    GL.Vertex3(base.pontosLista[pos + 3].X, base.pontosLista[pos + 3].Y, base.pontosLista[pos + 3].Z);
-                    GL.Vertex3(base.pontosLista[pos + 2].X, base.pontosLista[pos + 2].Y, base.pontosLista[pos + 2].Z);
-                    GL.Vertex3(base.pontosLista[pos + 6].X, base.pontosLista[pos + 6].Y, base.pontosLista[pos + 6].Z);
-                    GL.Vertex3(base.pontosLista[pos + 7].X, base.pontosLista[pos + 7].Y, base.pontosLista[pos + 7].Z);
+                    GL.Vertex3(base.pontosLista[caminhoAzul[i] + 3].X, base.pontosLista[caminhoAzul[i] + 3].Y, base.pontosLista[caminhoAzul[i] + 3].Z);
+                    GL.Vertex3(base.pontosLista[caminhoAzul[i] + 2].X, base.pontosLista[caminhoAzul[i] + 2].Y, base.pontosLista[caminhoAzul[i] + 2].Z);
+                    GL.Vertex3(base.pontosLista[caminhoAzul[i] + 6].X, base.pontosLista[caminhoAzul[i] + 6].Y, base.pontosLista[caminhoAzul[i] + 6].Z);
+                    GL.Vertex3(base.pontosLista[caminhoAzul[i] + 7].X, base.pontosLista[caminhoAzul[i] + 7].Y, base.pontosLista[caminhoAzul[i] + 7].Z);
                     GL.End();
                 }
             }
@@ -331,21 +529,19 @@ namespace gcgcg
             // cria plataforma central para o dado
             addFaces(posDado, new Cor(255, 255, 0, 255), new Cor(164, 164, 0, 255)); // amarelo
 
-            cont = 0;
             // Cria as plataformas do caminho vermelho (caminho que leva o jogador para a vitória)
-            foreach (int pos in caminhoVermelho)
+            for(int i = 0; i < caminhoVermelho.Count; i++)
             {
-                cont++;
-                addFaces(pos, new Cor(255, 0, 0, 255), new Cor(196, 0, 0, 255)); // vermelho
-                if(cont == 0)
+                addFaces(caminhoVermelho[i], new Cor(255, 0, 0, 255), new Cor(196, 0, 0, 255)); // vermelho
+                if(i == 0)
                 {
                     GL.LineWidth(2);
                     GL.Begin(PrimitiveType.LineLoop);
                     GL.Color3(1f,1f,1f);
-                    GL.Vertex3(base.pontosLista[pos + 3].X, base.pontosLista[pos + 3].Y, base.pontosLista[pos + 3].Z);
-                    GL.Vertex3(base.pontosLista[pos + 2].X, base.pontosLista[pos + 2].Y, base.pontosLista[pos + 2].Z);
-                    GL.Vertex3(base.pontosLista[pos + 6].X, base.pontosLista[pos + 6].Y, base.pontosLista[pos + 6].Z);
-                    GL.Vertex3(base.pontosLista[pos + 7].X, base.pontosLista[pos + 7].Y, base.pontosLista[pos + 7].Z);
+                    GL.Vertex3(base.pontosLista[caminhoVermelho[i] + 3].X, base.pontosLista[caminhoVermelho[i] + 3].Y, base.pontosLista[caminhoVermelho[i] + 3].Z);
+                    GL.Vertex3(base.pontosLista[caminhoVermelho[i] + 2].X, base.pontosLista[caminhoVermelho[i] + 2].Y, base.pontosLista[caminhoVermelho[i] + 2].Z);
+                    GL.Vertex3(base.pontosLista[caminhoVermelho[i] + 6].X, base.pontosLista[caminhoVermelho[i] + 6].Y, base.pontosLista[caminhoVermelho[i] + 6].Z);
+                    GL.Vertex3(base.pontosLista[caminhoVermelho[i] + 7].X, base.pontosLista[caminhoVermelho[i] + 7].Y, base.pontosLista[caminhoVermelho[i] + 7].Z);
                     GL.End();
                 }
             }
@@ -356,69 +552,95 @@ namespace gcgcg
                 addFaces(pos, new Cor(0, 0, 255, 255), new Cor(0, 0, 179, 255)); // azul
             }
 
+            // Cria as plataformas para as peças azuis salvas
+            foreach (int pos in salvoAzul)
+            {
+                addFaces(pos, new Cor(0, 0, 255, 255), new Cor(0, 0, 179, 255)); // azul
+                
+            }
+
             // Cria as plataformas da casa vermelha
             foreach (int pos in casaVermelha)
             {
                 addFaces(pos, new Cor(255, 0, 0, 255), new Cor(196, 0, 0, 255)); // vermelho
             }
-        }
 
-        public Ponto4D getPontoInicialPeca(Ambiente amb, int posicao = 0, float tamanho = 0.6f)
-        {
-            List<Ponto4D> pontos = new List<Ponto4D>();
-            int pontoInicial = 0;
-            switch(amb)
+            // Cria as plataformas para as peças vermelhas salvas
+            foreach (int pos in salvoVermelho)
             {
-                case Ambiente.CASA_AZUL:
-                    pontoInicial = posCasaAzul + posicao * QUANTIDADE_PONTOS;
-                    break;
-                case Ambiente.CASA_VERMELHA:
-                    pontoInicial = posCasaVermelha + posicao * QUANTIDADE_PONTOS;
-                    break;
-                // case Ambiente.CAMINHO_AZUL:
-                //     pontoInicial = caminhoAzul[posicao];
-                //     break;
-                // case Ambiente.CAMINHO_VERMELHO:
-                //     pontoInicial = caminhoVermelho[posicao];
-                //     break;
-                case Ambiente.MEIO:
-                    pontoInicial = posDado;
-                    break;
-                case Ambiente.TRILHA:
-                    pontoInicial = trilha[posicao == 0 ? posJogadorAzul : posJogadorVermelho];
-                    break;
+                addFaces(pos, new Cor(255, 0, 0, 255), new Cor(196, 0, 0, 255)); // vermelho
             }
-
-            // sentido anti-horário
-            double metadePeca = tamanho / 2;
-            double metadePlataforma = (base.pontosLista[pontoInicial + b].X - base.pontosLista[pontoInicial + a].X) / 2;
-
-            return (new Ponto4D(base.pontosLista[pontoInicial + a].X + metadePlataforma - metadePeca, base.pontosLista[pontoInicial + a].Y+0.1, base.pontosLista[pontoInicial + a].Z - metadePlataforma + metadePeca)); // A
         }
 
         public void enter()
         {
-            Task.Run(async delegate
+            if(qntRestanteAzul != 0 && qntRestanteVermelho != 0 && pausa == false)
             {
-                if(!jogarNovamente)
+                Task.Run(async delegate
                 {
-                    if(jogador == 1)
-                        jogador = 2;
+                    // muda o jogador da vez
+                    if(!jogarNovamente)
+                    {
+                        if(jogador == 1)
+                        {
+                            jogador = 2;
+                            camera.Eye = new Vector3(0, 12, -17);
+                        }
+                        else
+                        {
+                            jogador = 1;
+                            camera.Eye = new Vector3(0, 12, 17);
+                        }
+                        
+                        obj_Dado.mudaCor(jogador);
+                    }
+
+                    // joga o dado para sortear um número
+                    int numero = obj_Dado.girarDado();
+
+                    await Task.Delay(500);
+
+                    bool moveuPeca = false;
+
+                    if(numero == 6)
+                    {
+                        jogarNovamente = true;
+
+                        // procura por uma peça que ainda não saiu da casa para tirar
+                        foreach(Peca p in (jogador == 1 ? pecasAzuis : pecasVermelhas))
+                        {
+                            if(p.AmbientePeca == (jogador == 1 ? Ambiente.CASA_AZUL : Ambiente.CASA_VERMELHA))
+                            {
+                                moveuPeca = true;
+                                movePeca(p, 1);
+                                break;
+                            }
+                        }
+                    }
                     else
-                        jogador = 1;
-                    
-                    obj_Dado.mudaCor(jogador);
-                }
-                int numero = obj_Dado.girarDado();
+                    {
+                        jogarNovamente = false;
+                    }
 
-                if(numero == 6)
-                    jogarNovamente = true;
-                else
-                    jogarNovamente = false;
-                
-
-                await Task.Delay(5000);
-            });
+                    // caso não tenha sido tirada uma peça da casa, apenas move uma peça da trilha
+                        // verifica se a peça está no caminho do jogador e o número tirado é 
+                        // menor ou igual à quantidade de posições restantes para finalizar 
+                        // (é necessário tirar o número exato p salvar a peça)
+                    if(!moveuPeca)
+                    {
+                        foreach(Peca p in (jogador == 1 ? pecasAzuis : pecasVermelhas))
+                        {
+                            if( (p.AmbientePeca == Ambiente.TRILHA) ||
+                                (p.AmbientePeca == Ambiente.CAMINHO_AZUL && p.Posicao + numero <= 5) ||
+                                (p.AmbientePeca == Ambiente.CAMINHO_VERMELHO && p.Posicao - numero >= 0) )
+                            {
+                                movePeca(p, numero);
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         public override string ToString()

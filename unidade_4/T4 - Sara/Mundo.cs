@@ -52,7 +52,7 @@ namespace gcgcg
       // camera.Eye = new Vector3(15, 10, 15);
       camera.Eye = new Vector3(0, 12, 17);
       camera.At = new Vector3(0, 0, 0);
-      obj_Tabuleiro = new Tabuleiro(Utilitario.charProximo(), null);
+      obj_Tabuleiro = new Tabuleiro(Utilitario.charProximo(), null, camera);
       objetosLista.Add(obj_Tabuleiro);
       objetoSelecionado = obj_Tabuleiro;
 

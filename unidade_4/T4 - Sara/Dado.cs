@@ -39,7 +39,7 @@ namespace gcgcg
             cor1 = a;
             cor2 = b;
 
-            cor = new Cor(255,255,255,255);
+            cor = cor1;
 
             girarDado();
         }
