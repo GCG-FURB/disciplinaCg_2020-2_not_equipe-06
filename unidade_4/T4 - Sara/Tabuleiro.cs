@@ -396,9 +396,8 @@ namespace gcgcg
             {
                 pto = getProximaPosicao(p);
                 p.movePeca(pto);
-                await Task.Delay(100);
+                await Task.Delay(200);
             }
-            pausa = false;
 
             if( (p.AmbientePeca == Ambiente.CAMINHO_AZUL && p.Posicao == 5) ||
                 (p.AmbientePeca == Ambiente.CAMINHO_VERMELHO && p.Posicao == 0) )
@@ -427,6 +426,7 @@ namespace gcgcg
                     }
                 }
             }
+            pausa = false;
         }
 
         private void addPontosFaces(float xEsquerda, float xDireita, float yBaixo, float yCima, float zFrente, float zTras)
@@ -578,27 +578,27 @@ namespace gcgcg
             {
                 Task.Run(async delegate
                 {
-                    // muda o jogador da vez
-                    if(!jogarNovamente)
-                    {
-                        if(jogador == 1)
-                        {
-                            jogador = 2;
-                            camera.Eye = new Vector3(0, 12, -17);
-                        }
-                        else
-                        {
-                            jogador = 1;
-                            camera.Eye = new Vector3(0, 12, 17);
-                        }
+                    // // muda o jogador da vez
+                    // if(!jogarNovamente)
+                    // {
+                    //     if(jogador == 1)
+                    //     {
+                    //         jogador = 2;
+                    //         camera.Eye = new Vector3(0, 12, -17);
+                    //     }
+                    //     else
+                    //     {
+                    //         jogador = 1;
+                    //         camera.Eye = new Vector3(0, 12, 17);
+                    //     }
                         
-                        obj_Dado.mudaCor(jogador);
-                    }
+                    //     obj_Dado.mudaCor(jogador);
+                    // }
 
                     // joga o dado para sortear um número
                     int numero = obj_Dado.girarDado();
 
-                    await Task.Delay(500);
+                    await Task.Delay(300);
 
                     bool moveuPeca = false;
 
@@ -638,6 +638,28 @@ namespace gcgcg
                                 break;
                             }
                         }
+                    }
+
+                    while(pausa)
+                    {
+                        continue;
+                    }
+                    await Task.Delay(300);
+                    
+                    if(!jogarNovamente && qntRestanteAzul != 0 && qntRestanteVermelho != 0)
+                    {
+                        if(jogador == 1)
+                        {
+                            jogador = 2;
+                            camera.Eye = new Vector3(0, 12, -17);
+                        }
+                        else
+                        {
+                            jogador = 1;
+                            camera.Eye = new Vector3(0, 12, 17);
+                        }
+                        
+                        obj_Dado.mudaCor(jogador);
                     }
                 });
             }

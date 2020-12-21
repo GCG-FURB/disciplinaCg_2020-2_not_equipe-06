@@ -47,9 +47,9 @@ namespace gcgcg
 
       Console.WriteLine(" --- Ajuda / Teclas: ");
       Console.WriteLine(" [  H     ] mostra teclas usadas. ");
+      Utilitario.AjudaJogo();
 
 
-      // camera.Eye = new Vector3(15, 10, 15);
       camera.Eye = new Vector3(0, 12, 17);
       camera.At = new Vector3(0, 0, 0);
       obj_Tabuleiro = new Tabuleiro(Utilitario.charProximo(), null, camera);
@@ -130,6 +130,7 @@ namespace gcgcg
     {
       // Console.Clear(); //TODO: não funciona.
       if (e.Key == Key.H) Utilitario.AjudaTeclado();
+      else if (e.Key == Key.F1) Utilitario.AjudaJogo();
       else if (e.Key == Key.Escape) Exit();
       //--------------------------------------------------------------
       else if (e.Key == Key.Number9)
